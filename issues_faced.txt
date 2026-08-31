@@ -1,0 +1,74 @@
+
+1.
+
+🔴 Error explanation
+TypeError: type Tensor doesn't define __round__ method
+
+👉 Meaning:
+You are trying to use round() on a PyTorch tensor, not a normal number.
+
+🔹 Your problematic line
+score = round(box.conf[0], 2)
+box.conf[0] → tensor (not float)
+round() → only works on float, not tensor
+🟢 Fix (IMPORTANT)
+✔ Convert tensor → float first
+score = round(float(box.conf[0]), 2)
+🔥 Alternative (better way)
+score = float(box.conf[0])
+score = round(score, 2)
+
+
+2.
+      cvzone.putTextRect(img, f"{cls} {score}" , (max(1,x1), max(40,y1)) ,scale=0.8  , thickness = 3)
+
+      here positions must be a tuple (max(1,x1), max(40,y1))
+
+
+3.
+
+                ZeroDivisionError: float division by zero
+
+❌ Problem 1: possible division by zero
+
+If both times are equal:
+
+new_frame_time - past_frame_time = 0
+
+👉 causes crash
+
+❌ Problem 2: unstable FPS (very noisy)
+
+Frame-to-frame FPS fluctuates a lot.
+
+❌ Problem 3: you are not checking video read success
+success, img = cap.read()
+
+If success = False, FPS becomes meaningless.
+
+🟢 FIXED VERSION (recommended)
+diff = new_frame_time - past_frame_time
+
+if diff > 0:
+    fps = 1 / diff
+else:
+    fps = 0
+
+past_frame_time = new_frame_time
+
+At the start of your program:
+
+past_frame_time = time.time()
+
+Then immediately inside loop:
+
+new_frame_time = time.time()
+
+👉 If execution is extremely fast, both values can be almost identical:
+
+past_frame_time = 1700000000.123
+new_frame_time  = 1700000000.123
+
+So:
+
+difference = 0
